@@ -145,7 +145,7 @@ if os.getenv('HYPERLIQUID_WALLET_ADDRESS'):
 if os.getenv('TELEGRAM_TOKEN'):
     config.set('NOTIFICATIONS', 'telegram_token', os.getenv('TELEGRAM_TOKEN'))
 if os.getenv('TELEGRAM_CHAT_ID'):
-    config.set('NOTIFICATIONS', 'telegram_chat_id', os.getenv('TELEGRAM_CHAT_ID'))`
+    config.set('NOTIFICATIONS', 'telegram_chat_id', os.getenv('TELEGRAM_CHAT_ID'))
 
 # Ensure EXCHANGE section exists (for switching between Bybit/Hyperliquid)
 if 'EXCHANGE' not in config:
