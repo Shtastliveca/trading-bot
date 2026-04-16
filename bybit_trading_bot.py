@@ -28,6 +28,22 @@ from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_excep
 # Add additional imports for manual entry functionality
 from flask import render_template, send_from_directory
 
+from functools import wraps
+
+def require_password(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        dashboard_pw = os.getenv('DASHBOARD_PASSWORD', '')
+        if not dashboard_pw:
+            return f(*args, **kwargs)  # No password set, allow access
+        auth = request.authorization
+        if not auth or auth.password != dashboard_pw:
+            return ('Unauthorized', 401, {
+                'WWW-Authenticate': 'Basic realm="Trading Bot"'
+            })
+        return f(*args, **kwargs)
+    return decorated
+
 # Import the database queue system
 from db_queue import (
     queue_operation, 
@@ -6671,6 +6687,7 @@ def webhook():
 
 # Enhanced health check endpoint
 @app.route('/health', methods=['GET'])
+@require_password
 def health_check():
     try:
         # Test API connection
@@ -6748,6 +6765,7 @@ def health_check():
 
 # IMPROVEMENT: Enhanced Monitoring
 @app.route('/monitoring', methods=['GET'])
+@require_password
 def monitoring():
     try:
         # System metrics
@@ -6816,6 +6834,7 @@ def monitoring():
 
 # IMPROVEMENT: Performance Tracking Endpoint
 @app.route('/performance', methods=['GET'])
+@require_password
 def performance():
     try:
         metrics = get_performance_metrics()
@@ -6894,6 +6913,7 @@ def performance():
 
 # Add endpoint to view reconciliation log
 @app.route('/reconciliation/log', methods=['GET'])
+@require_password
 def reconciliation_log():
     try:
         limit = request.args.get('limit', default=100, type=int)
@@ -6941,6 +6961,7 @@ def reconciliation_log():
 
 # EXCEL LOGGING: Add endpoints to manage Excel file
 @app.route('/excel/export', methods=['GET'])
+@require_password
 def export_to_excel():
     """Endpoint to manually trigger database export to Excel"""
     try:
@@ -6972,6 +6993,7 @@ def export_to_excel():
         }), 500
 
 @app.route('/excel/backup', methods=['GET'])
+@require_password
 def backup_excel_file():
     """Endpoint to manually trigger Excel file backup"""
     try:
@@ -6997,6 +7019,7 @@ def backup_excel_file():
 
 
 @app.route('/risk/max-loss-status', methods=['GET'])
+@require_password
 def max_loss_status():
     """API endpoint to check current max loss status"""
     try:
@@ -7057,6 +7080,7 @@ def max_loss_status():
 
 
 @app.route('/risk/reset-max-loss', methods=['POST'])
+@require_password
 def reset_max_loss():
     """API endpoint to reset max daily loss by setting current balance as the reference"""
     global last_max_loss_notification_time, last_warning_notification_time, max_loss_first_triggered_time, skipped_signals_count
@@ -7115,6 +7139,7 @@ def reset_max_loss():
 
 # Endpoint to get pending orders
 @app.route('/api/pending-orders', methods=['GET'])
+@require_password
 def get_pending_orders():
     """API endpoint to get current pending orders"""
     try:
@@ -7168,6 +7193,7 @@ def get_pending_orders():
 
 # Endpoint to cancel a pending order
 @app.route('/api/cancel-order', methods=['POST'])
+@require_password
 def cancel_pending_order():
     """API endpoint to cancel a pending order"""
     try:
@@ -7230,11 +7256,13 @@ def cancel_pending_order():
 
 # Serve the manual entry HTML page
 @app.route('/')
+@require_password
 def index():
     return send_from_directory('.', 'manual_entry.html')
 
 # API endpoint to get current price
 @app.route('/api/price', methods=['GET'])
+@require_password
 def get_price():
     try:
         symbol = request.args.get('symbol', config['TRADING'].get('default_symbol', 'BTCUSDT'))
@@ -7264,6 +7292,7 @@ def get_price():
 
 # API endpoint to calculate position size
 @app.route('/api/calculate-position', methods=['POST'])
+@require_password
 def calculate_position_api():
     try:
         data = request.json
@@ -7382,6 +7411,7 @@ def calculate_position_api():
 
 # API endpoint to execute a manual trade
 @app.route('/api/execute-trade', methods=['POST'])
+@require_password
 def execute_manual_trade():
     try:
         data = request.json
@@ -7549,6 +7579,7 @@ def execute_manual_trade():
 
 # API endpoint to get active positions with current R multiple
 @app.route('/api/positions', methods=['GET'])
+@require_password
 def get_active_positions():
     try:
         client = initialize_bybit_client()
@@ -7657,6 +7688,7 @@ def get_active_positions():
 
 # API endpoint to close a specific position
 @app.route('/api/close-position', methods=['POST'])
+@require_password
 def close_position_api():
     try:
         data = request.json
