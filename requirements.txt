@@ -1,0 +1,11 @@
+flask
+waitress
+pybit
+requests
+psutil
+pandas
+openpyxl
+python-dotenv
+tenacity
+hyperliquid-python
+eth-account

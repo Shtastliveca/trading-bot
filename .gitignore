@@ -1,0 +1,29 @@
+# Secrets - NEVER commit these
+.env
+
+# Database files
+*.db
+trading_bot.db
+
+# Log files
+*.log
+trading_bot.log
+
+# Excel files
+*.xlsx
+trading_log.xlsx
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Capital tracking
+capital.txt
+
+# Backup files
+*.bak

@@ -1,0 +1,1 @@
+web: python bybit_trading_bot.py

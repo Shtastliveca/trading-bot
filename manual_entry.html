@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manual Trade Entry</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, button {
+            padding: 8px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .price-display {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .position-preview {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #e9f7ef;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+        .success {
+            color: green;
+            margin-top: 10px;
+        }
+        .radio-group {
+            display: flex;
+            gap: 20px;
+        }
+        .radio-group label {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: normal;
+        }
+        .radio-group input[type="radio"] {
+            width: auto;
+            margin: 0;
+        }
+        
+        /* Styles for positions table */
+        .positions-container {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .positions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .positions-table th,
+        .positions-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .positions-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .positions-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        .close-btn {
+            background-color: #dc3545;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+            width: auto;
+        }
+        .close-btn:hover {
+            background-color: #c82333;
+        }
+        .r-positive {
+            color: green;
+            font-weight: bold;
+        }
+        .r-negative {
+            color: red;
+            font-weight: bold;
+        }
+        .direction-long {
+            color: green;
+            font-weight: bold;
+        }
+        .direction-short {
+            color: red;
+            font-weight: bold;
+        }
+        .no-positions {
+            text-align: center;
+            color: #666;
+            padding: 20px;
+        }
+        #refreshBtn {
+            background-color: #007bff;
+            margin-bottom: 10px;
+            width: auto;
+            padding: 8px 16px;
+        }
+        #refreshBtn:hover {
+            background-color: #0056b3;
+        }
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .checkbox-container input[type="checkbox"] {
+            width: auto;
+        }
+        .tp-fixed-r-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .tp-fixed-r-group .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        .calculated-tp {
+            padding: 5px 10px;
+            background-color: #e8f4fc;
+            border-radius: 4px;
+            display: inline-block;
+            font-weight: bold;
+        }
+        .order-type-container {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f0f8ff;
+            border-radius: 5px;
+            border: 1px solid #d0e3ff;
+        }
+        .order-type-container h4 {
+            margin-top: 0;
+            color: #0056b3;
+        }
+        .pending-orders-container {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #fff8e1;
+            border-radius: 5px;
+            border: 1px solid #ffe082;
+        }
+        .pending-orders-title {
+            color: #ff8f00;
+            margin-top: 0;
+        }
+        .badge {
+            display: inline-block;
+            padding: 3px 7px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+        .badge-limit {
+            background-color: #007bff;
+            color: white;
+        }
+        .badge-market {
+            background-color: #6c757d;
+            color: white;
+        }
+        .badge-pending {
+            background-color: #ffc107;
+            color: black;
+        }
+
+        /* Candle Close Timer Styles */
+        .candle-timer-container {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e8f5e9;
+            border-radius: 5px;
+            border: 1px solid #a5d6a7;
+            text-align: center;
+        }
+
+        .candle-timer-heading {
+            color: #2e7d32;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        .candle-timer-display {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+
+        .candle-timer-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .candle-timer-controls button {
+            padding: 8px 16px;
+            width: auto;
+        }
+
+        #startCandleTimerBtn {
+            background-color: #4CAF50;
+        }
+
+        #stopCandleTimerBtn {
+            background-color: #f44336;
+        }
+
+        .timeframe-selector {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .timeframe-selector select {
+            width: auto;
+            padding: 5px 10px;
+        }
+
+        .timer-active {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+            }
+        }
+
+        .next-candle-info {
+            font-size: 14px;
+            color: #555;
+            margin: 10px 0;
+        }
+        
+        /* NEW STYLES FOR COMPACT LAYOUT */
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 5px;
+        }
+        
+        .form-col {
+            flex: 1;
+            min-width: 180px;
+        }
+        
+        .form-col-small {
+            flex: 0 0 auto;
+            width: 120px;
+        }
+        
+        .form-col-medium {
+            flex: 0 0 auto;
+            width: 170px;
+        }
+        
+        .form-col-large {
+            flex: 1;
+            min-width: 220px;
+        }
+        
+        .form-section {
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+        }
+        
+        .form-section-title {
+            font-weight: bold;
+            font-size: 15px;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        
+        .form-col .form-group {
+            margin-bottom: 0;
+        }
+        
+        .form-group {
+            margin-bottom: 8px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 3px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        
+        input, select {
+            padding: 5px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .compact-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .compact-checkbox input {
+            width: auto;
+        }
+        
+        .compact-checkbox label {
+            margin-bottom: 0;
+            font-weight: normal;
+        }
+        
+        .side-by-side {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .side-by-side > div {
+            flex: 1;
+        }
+        
+        .container {
+            padding: 15px;
+        }
+        
+        .price-display {
+            margin: 10px 0;
+        }
+        
+        /* Worker status indicator */
+        .worker-status {
+            font-size: 10px;
+            padding: 2px 5px;
+            border-radius: 3px;
+            margin-left: 8px;
+            font-weight: normal;
+        }
+        .worker-active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .worker-error {
+            background-color: #f44336;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="margin: 10px 0 15px 0; font-size: 1.5em;">Trading Bot Control Panel</h1>
+    
+    <!-- Active Positions Section -->
+    <div class="positions-container">
+        <h2>Active Positions</h2>
+        <button id="refreshBtn">Refresh Positions</button>
+        <div id="positionsContent">
+            <p class="no-positions">Loading positions...</p>
+        </div>
+    </div>
+    
+    <!-- Pending Orders Section -->
+    <div id="pendingOrdersContainer" class="pending-orders-container" style="display: none;">
+        <h2 class="pending-orders-title">Pending Orders</h2>
+        <div id="pendingOrdersContent">
+            <p>No pending orders.</p>
+        </div>
+    </div>
+    
+    <!-- Candle Close Timer Section - MORE COMPACT -->
+    <div class="candle-timer-container" style="padding: 10px; margin-top: 10px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px;">
+            <h2 class="candle-timer-heading" style="margin: 0; font-size: 1.1em;">Candle Close Entry Timer<span id="workerStatus" class="worker-status">Loading...</span></h2>
+            
+            <div class="timeframe-selector" style="margin: 0;">
+                <label for="candleTimeframe" style="display: inline; margin-right: 5px; font-size: 0.9em;">Timeframe:</label>
+                <select id="candleTimeframe" style="padding: 3px; width: auto;">
+                    <option value="1">1m</option>
+                    <option value="3">3m</option>
+                    <option value="5" selected>5m</option>
+                    <option value="15">15m</option>
+                    <option value="30">30m</option>
+                    <option value="60">1h</option>
+                </select>
+            </div>
+        </div>
+        
+        <div style="display: flex; align-items: center; justify-content: space-between; margin: 5px 0;">
+            <div class="next-candle-info" id="nextCandleInfo" style="margin: 0; font-size: 0.85em;">
+                Next candle closes at: calculating...
+            </div>
+            
+            <div class="candle-timer-display" id="candleTimerDisplay" style="margin: 0; font-size: 1.2em; font-weight: bold; font-family: monospace;">
+                00:00:00
+            </div>
+        </div>
+        
+        <div class="candle-timer-controls" style="margin-top: 8px; gap: 5px;">
+            <button id="startCandleTimerBtn" style="padding: 5px 10px; font-size: 0.9em;">Start Timer for Next Candle</button>
+            <button id="stopCandleTimerBtn" style="padding: 5px 10px; font-size: 0.9em; display: none;">Stop Timer</button>
+        </div>
+        
+        <!-- Price Condition UI and Auto-Restart Option -->
+        <div class="price-condition-container" style="margin-top: 10px; padding: 5px; border-top: 1px dashed #a5d6a7;">
+            <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <!-- Price condition checkbox and label -->
+                <div style="display: flex; align-items: center; white-space: nowrap;">
+                    <input type="checkbox" id="enablePriceCondition" style="width: auto; margin-right: 5px;">
+                    <label for="enablePriceCondition" style="display: inline; margin: 0; font-size: 0.9em;">Only enter if price is:</label>
+                </div>
+                
+                <!-- Dropdown and input - initially hidden -->
+                <div id="priceConditionControls" style="display: none;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <select id="priceConditionType" style="width: auto; padding: 3px;">
+                            <option value="above">Above</option>
+                            <option value="below">Below</option>
+                        </select>
+                        
+                        <input type="number" id="priceConditionValue" placeholder="Enter price" step="0.01" style="width: 120px; padding: 3px;">
+                    </div>
+                </div>
+                
+                <!-- Auto-restart checkbox - on same line -->
+                <div style="display: flex; align-items: center; white-space: nowrap; margin-left: auto;">
+                    <input type="checkbox" id="autoRestartTimer" style="width: auto; margin-right: 5px;">
+                    <label for="autoRestartTimer" style="display: inline; margin: 0; font-size: 0.9em;">Auto-restart if not met</label>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Manual Entry Section - RESTRUCTURED FOR BETTER SPACE USAGE -->
+    <div class="container">
+        <h2>Manual Trade Entry</h2>
+        <div class="price-display" id="priceDisplay">
+            Loading current price...
+        </div>
+        
+        <!-- Entry Details Section -->
+        <div class="form-section" style="margin-top: 5px;">
+            <div class="form-row">
+                <div class="form-col-small">
+                    <div class="form-group">
+                        <label for="symbol">Symbol:</label>
+                        <select id="symbol">
+                            <option value="BTCUSDT" selected>BTCUSDT</option>
+                            <option value="ETHUSDT">ETHUSDT</option>
+                            <option value="SOLUSDT">SOLUSDT</option>
+                            <!-- Add more symbols as needed -->
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-col-small">
+                    <div class="form-group">
+                        <label for="direction">Direction: <small style="font-weight: normal; color: #0056b3;">(auto)</small></label>
+                        <select id="direction">
+                            <option value="long">LONG</option>
+                            <option value="short">SHORT</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="stopLoss">Stop Loss:</label>
+                        <input type="number" id="stopLoss" step="0.01" placeholder="Enter stop loss price">
+                    </div>
+                </div>
+                
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="takeProfit">Take Profit:</label>
+                        <input type="number" id="takeProfit" step="0.01" placeholder="Enter take profit price">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Order Type and Risk Settings in same row -->
+        <div class="form-row">
+            <!-- Order Type Settings -->
+            <div class="form-col">
+                <div style="background-color: #f0f8ff; border-radius: 4px; border: 1px solid #d0e3ff; padding: 5px;">
+                    <div style="font-weight: bold; color: #0056b3; font-size: 0.9em; margin-bottom: 5px;">Order Types</div>
+                    <div class="form-row" style="margin-bottom: 0;">
+                        <div class="form-col">
+                            <div class="compact-checkbox">
+                                <input type="checkbox" id="useLimitEntryOrder" name="useLimitEntryOrder">
+                                <label for="useLimitEntryOrder">Limit Entry</label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-col">
+                            <div class="compact-checkbox">
+                                <input type="checkbox" id="useLimitTpOrder" name="useLimitTpOrder">
+                                <label for="useLimitTpOrder">Limit TP</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Risk Settings Section -->
+            <div class="form-col">
+                <div style="background-color: #fff4e6; border-radius: 4px; border: 1px solid #ffd8a8; padding: 5px;">
+                    <div style="font-weight: bold; color: #e67700; font-size: 0.9em; margin-bottom: 5px;">Risk Mode</div>
+                    <div class="form-row" style="margin-bottom: 0;">
+                        <div class="form-col">
+                            <div class="radio-group" style="gap: 10px;">
+                                <label style="font-size: 0.85em;">
+                                    <input type="radio" name="riskMode" value="percentage" checked> % Risk
+                                </label>
+                                <label style="font-size: 0.85em;">
+                                    <input type="radio" name="riskMode" value="fixed"> $ Risk
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-col-small">
+                            <div class="form-group" id="percentRiskGroup" style="margin-bottom: 0;">
+                                <input type="number" id="percentRisk" step="0.1" min="0.1" max="10" value="1" style="width: 100%; padding: 3px 5px;">
+                            </div>
+                            
+                            <div class="form-group" id="fixedRiskGroup" style="display: none; margin-bottom: 0;">
+                                <input type="number" id="fixedRisk" step="1" min="1" value="100" style="width: 100%; padding: 3px 5px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Fixed R TP Section -->
+        <div class="form-row" style="margin-top: 5px;">
+            <div class="form-col">
+                <div class="compact-checkbox">
+                    <input type="checkbox" id="useFixedRTp" name="useFixedRTp">
+                    <label for="useFixedRTp">Fixed R Multiple for TP</label>
+                </div>
+            
+                <div class="side-by-side" id="fixedRTpGroup" style="display: none; margin-top: 5px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <input type="number" id="fixedRTpMultiple" step="0.1" min="0.1" value="3" style="padding: 3px 5px;">
+                    </div>
+                    <div>
+                        <span style="font-size: 0.9em;">TP: <span id="calculatedTp" class="calculated-tp">-</span></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-col">
+                <button id="calculateBtn">Calculate Position Size</button>
+            </div>
+        </div>
+        
+        <div class="position-preview" id="positionPreview" style="display: none; padding: 10px; margin-top: 10px;">
+            <h3 style="margin-top: 0; margin-bottom: 8px; font-size: 1em;">Position Preview</h3>
+            <div class="form-row" style="margin-bottom: 5px;">
+                <div class="form-col-small">
+                    <p style="margin: 3px 0; font-size: 0.9em;">Symbol: <span id="previewSymbol"></span></p>
+                    <p style="margin: 3px 0; font-size: 0.9em;">Direction: <span id="previewDirection"></span></p>
+                </div>
+                <div class="form-col-small">
+                    <p style="margin: 3px 0; font-size: 0.9em;">Entry: <span id="previewPrice"></span></p>
+                    <p style="margin: 3px 0; font-size: 0.9em;">SL: <span id="previewStopLoss"></span></p>
+                </div>
+                <div class="form-col-small">
+                    <p style="margin: 3px 0; font-size: 0.9em;">TP: <span id="previewTakeProfit"></span> <span id="previewTpType"></span></p>
+                    <p style="margin: 3px 0; font-size: 0.9em;">Order: <span id="previewOrderType"></span></p>
+                </div>
+                <div class="form-col">
+                    <p style="margin: 3px 0; font-size: 0.9em;">Size: <span id="previewSize"></span></p>
+                    <p style="margin: 3px 0; font-size: 0.9em;">Risk: $<span id="previewRisk"></span></p>
+                </div>
+            </div>
+            
+            <button id="executeBtn" style="margin-top: 5px;">Execute Trade</button>
+        </div>
+        
+        <div id="resultMessage"></div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentPrice = 0;
+        let positionSize = 0;
+        let riskAmount = 0;
+        let candleTimerWorker = null;
+        let targetTimestamp = null;
+        let candleCloseExecutionPending = false;
+        
+        // Function to load and display active positions
+        function loadPositions() {
+            fetch('/api/positions')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        displayPositions(data.positions);
+                    } else {
+                        document.getElementById('positionsContent').innerHTML = 
+                            '<p class="error">Error loading positions: ' + data.message + '</p>';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('positionsContent').innerHTML = 
+                        '<p class="error">Error loading positions: ' + error.message + '</p>';
+                });
+                
+            // Load pending orders
+            fetch('/api/pending-orders')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        displayPendingOrders(data.orders);
+                    } else {
+                        console.error('Error loading pending orders:', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading pending orders:', error.message);
+                });
+        }
+        
+        // Function to display pending orders
+        function displayPendingOrders(orders) {
+            const container = document.getElementById('pendingOrdersContainer');
+            const content = document.getElementById('pendingOrdersContent');
+            
+            if (!orders || orders.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            container.style.display = 'block';
+            
+            let html = '<table class="positions-table">';
+            html += '<thead><tr>';
+            html += '<th>Symbol</th>';
+            html += '<th>Type</th>';
+            html += '<th>Side</th>';
+            html += '<th>Price</th>';
+            html += '<th>Size</th>';
+            html += '<th>Created</th>';
+            html += '<th>Action</th>';
+            html += '</tr></thead>';
+            html += '<tbody>';
+            
+            orders.forEach(order => {
+                const sideClass = order.side.toLowerCase() === 'buy' ? 'direction-long' : 'direction-short';
+                const formattedTime = formatTimestamp(order.createdTime);
+                
+                // Determine order type display text and badge
+                let orderTypeDisplay = order.orderType;
+                let priceDisplay = `$${parseFloat(order.price).toFixed(2)}`;
+                
+                // Check if this is a stop loss order
+                if (order.isStopLoss || 
+                    (order.orderType === 'Market' && order.stopOrderType && 
+                     (order.stopOrderType === 'StopLoss' || order.stopOrderType === 'StopMarket'))) {
+                    orderTypeDisplay = 'Stop Loss';
+                    // For stop loss orders, show the trigger price instead
+                    if (order.triggerPrice && parseFloat(order.triggerPrice) > 0) {
+                        priceDisplay = `$${parseFloat(order.triggerPrice).toFixed(2)}`;
+                    } else {
+                        priceDisplay = 'Market';
+                    }
+                }
+                
+                html += '<tr>';
+                html += `<td>${order.symbol}</td>`;
+                html += `<td>${orderTypeDisplay}</td>`;
+                html += `<td class="${sideClass}">${order.side}</td>`;
+                html += `<td>${priceDisplay}</td>`;
+                html += `<td>${order.qty}</td>`;
+                html += `<td>${formattedTime}</td>`;
+                html += `<td><button class="close-btn" onclick="cancelOrder('${order.orderId}')">Cancel</button></td>`;
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table>';
+            content.innerHTML = html;
+        }
+        
+        // Function to format timestamp
+        function formatTimestamp(timestamp) {
+            if (!timestamp) return 'Unknown';
+            
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+        
+        // Function to cancel a pending order
+        function cancelOrder(orderId) {
+            if (!orderId) return;
+            
+            if (!confirm('Are you sure you want to cancel this order?')) return;
+            
+            fetch('/api/cancel-order', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ orderId: orderId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(`Order canceled successfully`);
+                    loadPositions(); // Reload positions and pending orders
+                } else {
+                    alert(`Error canceling order: ${data.message}`);
+                }
+            })
+            .catch(error => {
+                alert(`Error canceling order: ${error.message}`);
+            });
+        }
+        
+        // Function to display positions in a table
+        function displayPositions(positions) {
+            const container = document.getElementById('positionsContent');
+            
+            if (positions.length === 0) {
+                container.innerHTML = '<p class="no-positions">No active positions</p>';
+                return;
+            }
+            
+            let html = '<table class="positions-table">';
+            html += '<thead><tr>';
+            html += '<th>Symbol</th>';
+            html += '<th>Direction</th>';
+            html += '<th>Entry Price</th>';
+            html += '<th>Current Price</th>';
+            html += '<th>Size</th>';
+            html += '<th>R Multiple</th>';
+            html += '<th>Action</th>';
+            html += '</tr></thead>';
+            html += '<tbody>';
+            
+            positions.forEach(position => {
+                const rClass = position.r_multiple >= 0 ? 'r-positive' : 'r-negative';
+                const dirClass = position.direction === 'long' ? 'direction-long' : 'direction-short';
+                
+                html += '<tr>';
+                html += `<td>${position.symbol}</td>`;
+                html += `<td class="${dirClass}">${position.direction.toUpperCase()}</td>`;
+                html += `<td>$${position.entry_price.toFixed(2)}</td>`;
+                html += `<td>$${position.current_price.toFixed(2)}</td>`;
+                html += `<td>${position.position_size}</td>`;
+                html += `<td class="${rClass}">${position.r_multiple.toFixed(2)}R</td>`;
+                html += `<td><button class="close-btn" onclick="closePosition('${position.symbol}')">Close</button></td>`;
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+        
+        // Function to close a position
+        function closePosition(symbol) {
+            // Get close order type
+            const useLimitCloseOrder = document.getElementById('useLimitTpOrder').checked;
+            
+            // Execute position close with confirmation
+            if (confirm(`Are you sure you want to close the position for ${symbol}?`)) {
+                fetch('/api/close-position', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        symbol: symbol,
+                        useLimitOrder: useLimitCloseOrder
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert(`Successfully closed position for ${symbol}`);
+                        loadPositions(); // Reload positions
+                    } else {
+                        alert(`Error closing position: ${data.message}`);
+                    }
+                })
+                .catch(error => {
+                    alert(`Error closing position: ${error.message}`);
+                });
+            }
+        }
+        
+        // Calculate take profit based on R multiple
+        function calculateFixedRTp() {
+            const useFixedRTp = document.getElementById('useFixedRTp').checked;
+            if (!useFixedRTp) return;
+            
+            const direction = document.getElementById('direction').value;
+            const stopLoss = parseFloat(document.getElementById('stopLoss').value);
+            const rMultiple = parseFloat(document.getElementById('fixedRTpMultiple').value);
+            
+            if (isNaN(stopLoss) || stopLoss <= 0 || isNaN(rMultiple) || rMultiple <= 0) {
+                document.getElementById('calculatedTp').innerText = "-";
+                return;
+            }
+            
+            // Validate stop loss in relation to current price
+            if ((direction === 'long' && stopLoss >= currentPrice) ||
+                (direction === 'short' && stopLoss <= currentPrice)) {
+                document.getElementById('calculatedTp').innerText = "Invalid SL";
+                return;
+            }
+            
+            // Calculate risk distance (1R)
+            const riskDistance = direction === 'long' ? 
+                (currentPrice - stopLoss) : (stopLoss - currentPrice);
+            
+            // Calculate take profit based on R multiple
+            const takeProfitPrice = direction === 'long' ?
+                (currentPrice + (riskDistance * rMultiple)) :
+                (currentPrice - (riskDistance * rMultiple));
+            
+            document.getElementById('calculatedTp').innerText = takeProfitPrice.toFixed(2);
+            document.getElementById('takeProfit').value = takeProfitPrice.toFixed(2);
+        }
+        
+        
+        // Auto set direction based on stop loss position relative to current price
+        function autoSetDirection() {
+            const stopLoss = parseFloat(document.getElementById('stopLoss').value);
+            
+            // Only proceed if stop loss is a valid number and we have current price
+            if (!isNaN(stopLoss) && stopLoss > 0 && currentPrice > 0) {
+                // Set direction based on stop loss position relative to current price
+                if (stopLoss < currentPrice) {
+                    document.getElementById('direction').value = 'long';
+                } else if (stopLoss > currentPrice) {
+                    document.getElementById('direction').value = 'short';
+                }
+                
+                // Update any dependent calculations
+                calculateFixedRTp();
+            }
+        }
+        // Refresh button event
+        document.getElementById('refreshBtn').addEventListener('click', loadPositions);
+        
+        // Function to update price every second
+        function updatePrice() {
+            const symbol = document.getElementById('symbol').value;
+            fetch(`/api/price?symbol=${symbol}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        currentPrice = parseFloat(data.price);
+                        document.getElementById('priceDisplay').innerText = 
+                            `${symbol}: ${currentPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                        
+                        // Update direction based on current price and stop loss
+                        autoSetDirection();
+                        
+                        // Recalculate TP if Fixed R is enabled
+                        calculateFixedRTp();
+                    } else {
+                        document.getElementById('priceDisplay').innerText = 
+                            `Error getting price: ${data.message}`;
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('priceDisplay').innerText = 
+                        `Error: ${error.message}`;
+                });
+        }
+        
+        // Calculate position size
+        document.getElementById('calculateBtn').addEventListener('click', function() {
+            calculatePosition();
+        });
+        
+        // Function to calculate position size (extracted to be reusable)
+        function calculatePosition() {
+            const symbol = document.getElementById('symbol').value;
+            const direction = document.getElementById('direction').value;
+            const stopLoss = parseFloat(document.getElementById('stopLoss').value);
+            const takeProfit = parseFloat(document.getElementById('takeProfit').value);
+            
+            // Get order type preferences
+            const useLimitEntryOrder = document.getElementById('useLimitEntryOrder').checked;
+            const useLimitTpOrder = document.getElementById('useLimitTpOrder').checked;
+            
+            // Get risk parameters
+            const riskMode = document.querySelector('input[name="riskMode"]:checked').value;
+            const percentRisk = parseFloat(document.getElementById('percentRisk').value);
+            const fixedRisk = parseFloat(document.getElementById('fixedRisk').value);
+            
+            if (!stopLoss || isNaN(stopLoss)) {
+                document.getElementById('resultMessage').className = 'error';
+                document.getElementById('resultMessage').innerText = 'Please enter a valid stop loss price.';
+                return false;
+            }
+            
+            // Check if stop loss is valid
+            if (direction === 'long' && stopLoss >= currentPrice) {
+                document.getElementById('resultMessage').className = 'error';
+                document.getElementById('resultMessage').innerText = 'For LONG positions, stop loss must be below the current price.';
+                return false;
+            }
+            
+            if (direction === 'short' && stopLoss <= currentPrice) {
+                document.getElementById('resultMessage').className = 'error';
+                document.getElementById('resultMessage').innerText = 'For SHORT positions, stop loss must be above the current price.';
+                return false;
+            }
+            
+            // Check if take profit is valid (if provided)
+            if (!isNaN(takeProfit) && takeProfit > 0) {
+                if (direction === 'long' && takeProfit <= currentPrice) {
+                    document.getElementById('resultMessage').className = 'error';
+                    document.getElementById('resultMessage').innerText = 'For LONG positions, take profit must be above the current price.';
+                    return false;
+                }
+                
+                if (direction === 'short' && takeProfit >= currentPrice) {
+                    document.getElementById('resultMessage').className = 'error';
+                    document.getElementById('resultMessage').innerText = 'For SHORT positions, take profit must be below the current price.';
+                    return false;
+                }
+            }
+            
+            // Request position size calculation from server
+            fetch('/api/calculate-position', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    symbol: symbol,
+                    direction: direction,
+                    currentPrice: currentPrice,
+                    stopLoss: stopLoss,
+                    takeProfit: !isNaN(takeProfit) && takeProfit > 0 ? takeProfit : null,
+                    riskMode: riskMode,
+                    percentRisk: percentRisk,
+                    fixedRisk: fixedRisk,
+                    useLimitEntryOrder: useLimitEntryOrder
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "success") {
+                    // Show position preview
+                    positionSize = data.position_size;
+                    riskAmount = data.risk_amount;
+                    
+                    document.getElementById('previewSymbol').innerText = symbol;
+                    document.getElementById('previewDirection').innerText = direction.toUpperCase();
+                    document.getElementById('previewOrderType').innerText = useLimitEntryOrder ? 'Limit Order' : 'Market Order';
+                    document.getElementById('previewPrice').innerText = currentPrice.toFixed(2);
+                    document.getElementById('previewStopLoss').innerText = stopLoss.toFixed(2);
+                    document.getElementById('previewTakeProfit').innerText = !isNaN(takeProfit) && takeProfit > 0 ? takeProfit.toFixed(2) : 'None';
+                    document.getElementById('previewTpType').innerText = (!isNaN(takeProfit) && takeProfit > 0 && useLimitTpOrder) ? '(Limit Order)' : '';
+                    document.getElementById('previewSize').innerText = positionSize.toFixed(6);
+                    document.getElementById('previewRisk').innerText = riskAmount.toFixed(2);
+                    
+                    document.getElementById('positionPreview').style.display = 'block';
+                    document.getElementById('resultMessage').innerText = '';
+                    return true;
+                } else {
+                    document.getElementById('resultMessage').className = 'error';
+                    document.getElementById('resultMessage').innerText = `Error: ${data.message}`;
+                    return false;
+                }
+            })
+            .catch(error => {
+                document.getElementById('resultMessage').className = 'error';
+                document.getElementById('resultMessage').innerText = `Error: ${error.message}`;
+                return false;
+            });
+            
+            return true;
+        }
+        
+        // Execute trade - MODIFIED: removed confirmation dialog
+        document.getElementById('executeBtn').addEventListener('click', function() {
+            executeTrade();
+        });
+        
+        // Function to execute a trade (extracted to be reusable)
+        function executeTrade() {
+            const symbol = document.getElementById('symbol').value;
+            const direction = document.getElementById('direction').value;
+            const stopLoss = parseFloat(document.getElementById('stopLoss').value);
+            const takeProfit = parseFloat(document.getElementById('takeProfit').value);
+            
+            // Get order type preferences
+            const useLimitEntryOrder = document.getElementById('useLimitEntryOrder').checked;
+            const useLimitTpOrder = document.getElementById('useLimitTpOrder').checked;
+            
+            // Get risk parameters
+            const riskMode = document.querySelector('input[name="riskMode"]:checked').value;
+            const percentRisk = parseFloat(document.getElementById('percentRisk').value);
+            const fixedRisk = parseFloat(document.getElementById('fixedRisk').value);
+            
+            // Execute trade without confirmation
+            fetch('/api/execute-trade', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    symbol: symbol,
+                    direction: direction,
+                    currentPrice: currentPrice,
+                    stopLoss: stopLoss,
+                    takeProfit: !isNaN(takeProfit) && takeProfit > 0 ? takeProfit : null,
+                    riskMode: riskMode,
+                    percentRisk: percentRisk,
+                    fixedRisk: fixedRisk,
+                    useLimitEntryOrder: useLimitEntryOrder,
+                    useLimitTpOrder: useLimitTpOrder
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "success") {
+                    document.getElementById('resultMessage').className = 'success';
+                    document.getElementById('resultMessage').innerText = `Trade executed successfully! Order ID: ${data.order_id}`;
+                    // Hide position preview after successful execution
+                    document.getElementById('positionPreview').style.display = 'none';
+                    // Reload positions
+                    loadPositions();
+                    
+                    // If candle timer was active, stop it
+                    if (candleCloseExecutionPending) {
+                        stopCandleTimer();
+                    }
+                } else {
+                    document.getElementById('resultMessage').className = 'error';
+                    document.getElementById('resultMessage').innerText = `Error: ${data.message}`;
+                }
+            })
+            .catch(error => {
+                document.getElementById('resultMessage').className = 'error';
+                document.getElementById('resultMessage').innerText = `Error: ${error.message}`;
+            });
+        }
+        
+        // Risk mode toggle
+        document.querySelectorAll('input[name="riskMode"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const percentGroup = document.getElementById('percentRiskGroup');
+                const fixedGroup = document.getElementById('fixedRiskGroup');
+                
+                if (this.value === 'percentage') {
+                    percentGroup.style.display = 'block';
+                    fixedGroup.style.display = 'none';
+                } else {
+                    percentGroup.style.display = 'none';
+                    fixedGroup.style.display = 'block';
+                }
+                
+                // Save preference
+                localStorage.setItem('riskMode', this.value);
+            });
+        });
+
+        // Fixed R TP toggle
+        document.getElementById('useFixedRTp').addEventListener('change', function() {
+            const fixedRTpGroup = document.getElementById('fixedRTpGroup');
+            
+            if (this.checked) {
+                fixedRTpGroup.style.display = 'flex';
+                calculateFixedRTp(); // Calculate immediately when enabled
+            } else {
+                fixedRTpGroup.style.display = 'none';
+            }
+            
+            // Save preference
+            localStorage.setItem('useFixedRTp', this.checked);
+        });
+        
+        // Save order type preferences
+        document.getElementById('useLimitEntryOrder').addEventListener('change', function() {
+            localStorage.setItem('useLimitEntryOrder', this.checked);
+        });
+        
+        document.getElementById('useLimitTpOrder').addEventListener('change', function() {
+            localStorage.setItem('useLimitTpOrder', this.checked);
+        });
+        
+        // Recalculate TP when R multiple changes
+        document.getElementById('fixedRTpMultiple').addEventListener('input', calculateFixedRTp);
+        
+        // Recalculate TP when stop loss changes
+        document.getElementById('stopLoss').addEventListener('input', calculateFixedRTp);
+        
+        // Recalculate TP when direction changes
+        document.getElementById('direction').addEventListener('change', calculateFixedRTp);
+        
+        // Auto-detect direction when stop loss changes
+        document.getElementById('stopLoss').addEventListener('input', autoSetDirection);
+        
+        // Load saved risk mode preference
+        const savedRiskMode = localStorage.getItem('riskMode');
+        if (savedRiskMode) {
+            document.querySelector(`input[name="riskMode"][value="${savedRiskMode}"]`).checked = true;
+            
+            // Trigger change event to update display
+            document.querySelector(`input[name="riskMode"][value="${savedRiskMode}"]`).dispatchEvent(new Event('change'));
+        }
+
+        // Load saved risk values
+        const savedPercentRisk = localStorage.getItem('percentRisk');
+        if (savedPercentRisk) {
+            document.getElementById('percentRisk').value = savedPercentRisk;
+        }
+
+        const savedFixedRisk = localStorage.getItem('fixedRisk');
+        if (savedFixedRisk) {
+            document.getElementById('fixedRisk').value = savedFixedRisk;
+        }
+        
+        // Load saved fixed R TP preferences
+        const savedUseFixedRTp = localStorage.getItem('useFixedRTp');
+        if (savedUseFixedRTp === 'true') {
+            document.getElementById('useFixedRTp').checked = true;
+            document.getElementById('fixedRTpGroup').style.display = 'flex';
+        }
+        
+        const savedFixedRTpMultiple = localStorage.getItem('fixedRTpMultiple');
+        if (savedFixedRTpMultiple) {
+            document.getElementById('fixedRTpMultiple').value = savedFixedRTpMultiple;
+        }
+        
+        // Load saved order type preferences
+        const savedUseLimitEntryOrder = localStorage.getItem('useLimitEntryOrder');
+        if (savedUseLimitEntryOrder === 'true') {
+            document.getElementById('useLimitEntryOrder').checked = true;
+        }
+        
+        const savedUseLimitTpOrder = localStorage.getItem('useLimitTpOrder');
+        if (savedUseLimitTpOrder === 'true') {
+            document.getElementById('useLimitTpOrder').checked = true;
+        }
+
+        // Save risk values when changed
+        document.getElementById('percentRisk').addEventListener('change', function() {
+            localStorage.setItem('percentRisk', this.value);
+        });
+
+        document.getElementById('fixedRisk').addEventListener('change', function() {
+            localStorage.setItem('fixedRisk', this.value);
+        });
+        
+        // Save fixed R TP multiple when changed
+        document.getElementById('fixedRTpMultiple').addEventListener('change', function() {
+            localStorage.setItem('fixedRTpMultiple', this.value);
+        });
+        
+        // Update symbol event
+        document.getElementById('symbol').addEventListener('change', updatePrice);
+        
+        // Initial load
+        loadPositions();
+        updatePrice();
+        
+        // Set intervals for updates
+        setInterval(updatePrice, 1000);
+        setInterval(loadPositions, 5000); // Refresh positions every 5 seconds
+        
+        // ==================== CANDLE CLOSE TIMER FUNCTIONS (WEB WORKER VERSION) ====================
+        
+        // Initialize Web Worker for timer (prevents browser throttling in background tabs)
+        function initCandleTimerWorker() {
+            try {
+                // Create worker from inline code (avoids file serving issues)
+                const workerCode = `
+                    let targetTimestamp = null;
+                    let timerInterval = null;
+                    
+                    self.onmessage = function(e) {
+                        const action = e.data.action;
+                        const data = e.data.data;
+                        
+                        if (action === 'start') {
+                            targetTimestamp = data.targetTimestamp;
+                            if (timerInterval) clearInterval(timerInterval);
+                            timerInterval = setInterval(checkTimer, 100);
+                            sendTime();
+                        } else if (action === 'stop') {
+                            if (timerInterval) clearInterval(timerInterval);
+                            timerInterval = null;
+                            targetTimestamp = null;
+                            self.postMessage({ type: 'stopped' });
+                        }
+                    };
+                    
+                    function checkTimer() {
+                        if (!targetTimestamp) return;
+                        const remaining = targetTimestamp - Date.now();
+                        if (remaining <= 0) {
+                            self.postMessage({ type: 'execute', timeRemaining: 0 });
+                            if (timerInterval) clearInterval(timerInterval);
+                            timerInterval = null;
+                            targetTimestamp = null;
+                        } else {
+                            sendTime();
+                        }
+                    }
+                    
+                    function sendTime() {
+                        const remaining = targetTimestamp ? Math.max(0, targetTimestamp - Date.now()) : 0;
+                        self.postMessage({ type: 'update', timeRemaining: remaining });
+                    }
+                `;
+                
+                const blob = new Blob([workerCode], { type: 'application/javascript' });
+                const workerUrl = URL.createObjectURL(blob);
+                candleTimerWorker = new Worker(workerUrl);
+                
+                candleTimerWorker.onmessage = function(e) {
+                    const { type, timeRemaining } = e.data;
+                    
+                    switch (type) {
+                        case 'update':
+                            updateTimerDisplay(timeRemaining);
+                            break;
+                        case 'execute':
+                            console.log('Worker triggered trade execution!');
+                            if (candleCloseExecutionPending) {
+                                executeTradeAtCandleClose();
+                            }
+                            break;
+                        case 'stopped':
+                            console.log('Worker timer stopped');
+                            break;
+                    }
+                };
+                
+                candleTimerWorker.onerror = function(error) {
+                    console.error('Candle timer worker error:', error);
+                    document.getElementById('workerStatus').textContent = 'Worker Error!';
+                    document.getElementById('workerStatus').className = 'worker-status worker-error';
+                };
+                
+                document.getElementById('workerStatus').textContent = 'Background OK';
+                document.getElementById('workerStatus').className = 'worker-status worker-active';
+                console.log('Web Worker initialized - timer will work in background tabs!');
+                
+            } catch (error) {
+                console.error('Failed to initialize Web Worker:', error);
+                document.getElementById('workerStatus').textContent = 'Worker Failed!';
+                document.getElementById('workerStatus').className = 'worker-status worker-error';
+            }
+        }
+        
+        // Calculate the next candle close timestamp
+        function calculateNextCandleClose(timeframeMinutes) {
+            const now = new Date();
+            const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
+            const milliseconds = now.getMilliseconds();
+            
+            // Calculate minutes until next candle close
+            const minutesUntilNextCandle = timeframeMinutes - (minutes % timeframeMinutes) - 1;
+            const secondsUntilNextCandle = 60 - seconds - 1;
+            const millisecondsUntilNextCandle = 1000 - milliseconds;
+            
+            // Create the target timestamp
+            const targetTime = new Date(now.getTime() + 
+                minutesUntilNextCandle * 60 * 1000 + 
+                secondsUntilNextCandle * 1000 + 
+                millisecondsUntilNextCandle);
+            
+            // Format for display
+            const hours = targetTime.getHours().toString().padStart(2, '0');
+            const mins = targetTime.getMinutes().toString().padStart(2, '0');
+            const secs = targetTime.getSeconds().toString().padStart(2, '0');
+            
+            // Update the next candle info display
+            const timeframeText = timeframeMinutes === 60 ? '1-hour' : `${timeframeMinutes}-minute`;
+            document.getElementById('nextCandleInfo').innerText = 
+                `Next ${timeframeText} candle closes at: ${hours}:${mins}:${secs}`;
+            
+            return targetTime;
+        }
+        
+        // Update the timer display (receives time from worker)
+        function updateTimerDisplay(timeRemaining) {
+            if (timeRemaining <= 0) {
+                document.getElementById('candleTimerDisplay').innerText = "00:00:00";
+                return;
+            }
+            
+            // Calculate hours, minutes, seconds
+            const hours = Math.floor(timeRemaining / (1000 * 60 * 60));
+            const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+            
+            // Format display
+            const displayText = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            document.getElementById('candleTimerDisplay').innerText = displayText;
+        }
+        
+        // Start the candle timer
+        function startCandleTimer() {
+            // Initialize worker if not already done
+            if (!candleTimerWorker) {
+                initCandleTimerWorker();
+            }
+            
+            // Get the selected timeframe
+            const timeframeMinutes = parseInt(document.getElementById('candleTimeframe').value);
+            
+            // Calculate the next candle close timestamp
+            const targetTime = calculateNextCandleClose(timeframeMinutes);
+            targetTimestamp = targetTime.getTime();
+            
+            // Send start command to worker
+            candleTimerWorker.postMessage({
+                action: 'start',
+                data: { targetTimestamp: targetTimestamp }
+            });
+            
+            // Mark execution as pending
+            candleCloseExecutionPending = true;
+            
+            // Update UI
+            document.getElementById('startCandleTimerBtn').style.display = 'none';
+            document.getElementById('stopCandleTimerBtn').style.display = 'inline-block';
+            document.getElementById('candleTimerDisplay').classList.add('timer-active');
+            document.getElementById('candleTimeframe').disabled = true;
+            
+            // Save timeframe preference
+            localStorage.setItem('candleTimeframe', timeframeMinutes);
+        }
+        
+        // Stop the candle timer
+        function stopCandleTimer() {
+            // Send stop command to worker
+            if (candleTimerWorker) {
+                candleTimerWorker.postMessage({ action: 'stop' });
+            }
+            
+            // Reset the target timestamp
+            targetTimestamp = null;
+            
+            // Mark execution as not pending
+            candleCloseExecutionPending = false;
+            
+            // Update UI
+            document.getElementById('startCandleTimerBtn').style.display = 'inline-block';
+            document.getElementById('stopCandleTimerBtn').style.display = 'none';
+            document.getElementById('candleTimerDisplay').classList.remove('timer-active');
+            document.getElementById('candleTimeframe').disabled = false;
+            document.getElementById('candleTimerDisplay').innerText = "00:00:00";
+            
+            // Recalculate and display next candle close time
+            const timeframeMinutes = parseInt(document.getElementById('candleTimeframe').value);
+            calculateNextCandleClose(timeframeMinutes);
+        }
+        
+        // Restart timer for next candle (used by auto-restart feature)
+        function restartTimerForNextCandle() {
+            console.log('Auto-restarting timer for next candle...');
+            
+            // Get the selected timeframe
+            const timeframeMinutes = parseInt(document.getElementById('candleTimeframe').value);
+            
+            // Calculate the next candle close timestamp
+            const targetTime = calculateNextCandleClose(timeframeMinutes);
+            targetTimestamp = targetTime.getTime();
+            
+            // Send start command to worker with new timestamp
+            candleTimerWorker.postMessage({
+                action: 'start',
+                data: { targetTimestamp: targetTimestamp }
+            });
+            
+            // Keep execution pending
+            candleCloseExecutionPending = true;
+            
+            // UI should already be in "timer running" state, but ensure it
+            document.getElementById('startCandleTimerBtn').style.display = 'none';
+            document.getElementById('stopCandleTimerBtn').style.display = 'inline-block';
+            document.getElementById('candleTimerDisplay').classList.add('timer-active');
+            document.getElementById('candleTimeframe').disabled = true;
+        }
+        
+        // Execute trade at candle close
+        function executeTradeAtCandleClose() {
+            // First calculate the position
+            const positionCalculated = calculatePosition();
+            
+            // If position calculation is successful, check price condition (if enabled)
+            if (positionCalculated) {
+                setTimeout(() => {
+                    // Make sure we're using the very latest price
+                    updatePrice();
+                    
+                    setTimeout(() => {
+                        // Check if price condition is enabled
+                        const isPriceConditionEnabled = document.getElementById('enablePriceCondition').checked;
+                        
+                        if (isPriceConditionEnabled) {
+                            // Get condition parameters
+                            const conditionType = document.getElementById('priceConditionType').value;
+                            const conditionPrice = parseFloat(document.getElementById('priceConditionValue').value);
+                            
+                            // Check if price meets the condition
+                            if (isNaN(conditionPrice)) {
+                                alert("Price condition is enabled but no valid price was entered");
+                                stopCandleTimer();
+                                return;
+                            }
+                            
+                            // Get current price
+                            const currentPriceValue = currentPrice; // Using the global currentPrice variable
+                            
+                            // Check if condition is met
+                            let conditionMet = false;
+                            if (conditionType === 'above' && currentPriceValue > conditionPrice) {
+                                conditionMet = true;
+                            } else if (conditionType === 'below' && currentPriceValue < conditionPrice) {
+                                conditionMet = true;
+                            }
+                            
+                            if (!conditionMet) {
+                                console.log(`Price condition not met. Current: $${currentPriceValue}, Condition: ${conditionType} $${conditionPrice}`);
+                                
+                                // Check if auto-restart is enabled
+                                const autoRestartEnabled = document.getElementById('autoRestartTimer').checked;
+                                
+                                if (autoRestartEnabled) {
+                                    // Auto-restart for next candle
+                                    console.log('Auto-restart enabled - restarting timer for next candle');
+                                    restartTimerForNextCandle();
+                                    // No alert, just log to console (optional: you can add a subtle notification)
+                                } else {
+                                    // Original behavior - stop and alert
+                                    stopCandleTimer();
+                                    alert(`Candle timer execution canceled - price condition not met.\nCurrent price: $${currentPriceValue.toFixed(2)}\nCondition: ${conditionType} $${conditionPrice}`);
+                                }
+                                return;
+                            }
+                        }
+                        
+                        // Now execute the trade with the latest price
+                        executeTrade();
+                    }, 500); // Small delay to ensure price is updated
+                }, 200);
+            } else {
+                alert("Failed to calculate position for candle close execution");
+            }
+        }
+        
+        // Add event listeners for candle timer controls
+        document.getElementById('startCandleTimerBtn').addEventListener('click', startCandleTimer);
+        document.getElementById('stopCandleTimerBtn').addEventListener('click', stopCandleTimer);
+        
+        // Update next candle close time when timeframe changes
+        document.getElementById('candleTimeframe').addEventListener('change', function() {
+            const timeframeMinutes = parseInt(this.value);
+            calculateNextCandleClose(timeframeMinutes);
+        });
+        
+        // Load saved candle timeframe preference
+        const savedCandleTimeframe = localStorage.getItem('candleTimeframe');
+        if (savedCandleTimeframe) {
+            document.getElementById('candleTimeframe').value = savedCandleTimeframe;
+        }
+        
+        // Initialize next candle close display
+        const initialTimeframe = parseInt(document.getElementById('candleTimeframe').value);
+        calculateNextCandleClose(initialTimeframe);
+        
+        // Initialize the Web Worker
+        initCandleTimerWorker();
+        
+        // Price condition checkbox toggle
+        document.getElementById('enablePriceCondition').addEventListener('change', function() {
+            const priceConditionControls = document.getElementById('priceConditionControls');
+            
+            if (this.checked) {
+                priceConditionControls.style.display = 'flex';
+            } else {
+                priceConditionControls.style.display = 'none';
+            }
+            
+            // Save preference
+            localStorage.setItem('enablePriceCondition', this.checked);
+        });
+        
+        // Load price condition preferences
+        const savedEnablePriceCondition = localStorage.getItem('enablePriceCondition');
+        if (savedEnablePriceCondition === 'true') {
+            document.getElementById('enablePriceCondition').checked = true;
+            document.getElementById('priceConditionControls').style.display = 'flex';
+        }
+        
+        const savedPriceConditionType = localStorage.getItem('priceConditionType');
+        if (savedPriceConditionType) {
+            document.getElementById('priceConditionType').value = savedPriceConditionType;
+        }
+        
+        const savedPriceConditionValue = localStorage.getItem('priceConditionValue');
+        if (savedPriceConditionValue) {
+            document.getElementById('priceConditionValue').value = savedPriceConditionValue;
+        }
+        
+        // Save price condition values when they change
+        document.getElementById('priceConditionType').addEventListener('change', function() {
+            localStorage.setItem('priceConditionType', this.value);
+        });
+        
+        document.getElementById('priceConditionValue').addEventListener('input', function() {
+            localStorage.setItem('priceConditionValue', this.value);
+        });
+        
+        // Auto-restart timer preference
+        document.getElementById('autoRestartTimer').addEventListener('change', function() {
+            localStorage.setItem('autoRestartTimer', this.checked);
+        });
+        
+        // Load saved auto-restart preference
+        const savedAutoRestartTimer = localStorage.getItem('autoRestartTimer');
+        if (savedAutoRestartTimer === 'true') {
+            document.getElementById('autoRestartTimer').checked = true;
+        }
+    </script>
+</body>
+</html>
