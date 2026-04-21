@@ -7136,6 +7136,28 @@ def reset_max_loss():
             "message": str(e)
         }), 500
 
+@app.route('/reset-max-loss')
+@require_password
+def reset_max_loss_page():
+    return '''<!DOCTYPE html>
+<html><head><title>Reset Max Daily Loss</title></head>
+<body>
+<h1>Reset Max Daily Loss</h1>
+<button onclick="doReset()">Reset Max Daily Loss</button>
+<div id="result" style="margin-top:20px;"></div>
+<script>
+async function doReset(){
+    document.getElementById("result").innerText="Processing...";
+    try{
+        const r=await fetch("/risk/reset-max-loss",{method:"POST"});
+        const d=await r.json();
+        document.getElementById("result").innerText=JSON.stringify(d,null,2);
+    }catch(e){
+        document.getElementById("result").innerText="Error: "+e.message;
+    }
+}
+</script>
+</body></html>'''
 
 # Endpoint to get pending orders
 @app.route('/api/pending-orders', methods=['GET'])
