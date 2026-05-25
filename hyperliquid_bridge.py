@@ -233,15 +233,29 @@ class HyperliquidBridge:
     
     # ========== Wallet Balance Methods ==========
     
-    def get_wallet_balance(self, accountType: str = "UNIFIED") -> Dict:
+    def get_wallet_balance(self, **kwargs) -> Dict:
         """Get wallet balance in Bybit response format."""
         try:
+            # Try perps user_state first (standard/legacy mode)
             user_state = self._info.user_state(self._wallet_address)
             margin_summary = user_state.get('marginSummary', {})
             account_value = float(margin_summary.get('accountValue', 0))
+
+            # If zero, try spot clearinghouse (unified account mode)
+            if account_value == 0:
+                try:
+                    spot_state = self._info.spot_user_state(self._wallet_address)
+                    balances = spot_state.get('balances', [])
+                    for b in balances:
+                        if b.get('coin', '').upper() in ('USDC', 'USDH'):
+                            account_value += float(b.get('total', 0))
+                    logger.info(f"Using unified account balance: ${account_value}")
+                except Exception as e:
+                    logger.error(f"Error getting spot state: {e}")
+
             total_margin_used = float(margin_summary.get('totalMarginUsed', 0))
             available_balance = account_value - total_margin_used
-            
+
             return {
                 'retCode': 0,
                 'retMsg': 'OK',
