@@ -241,20 +241,35 @@ class HyperliquidBridge:
             margin_summary = user_state.get('marginSummary', {})
             account_value = float(margin_summary.get('accountValue', 0))
 
-            # If zero, try spot clearinghouse (unified account mode)
+            # If zero, use portfolioState (unified/portfolio margin account)
             if account_value == 0:
                 try:
-                    spot_state = self._info.spot_user_state(self._wallet_address)
-                    balances = spot_state.get('balances', [])
-                    for b in balances:
-                        if b.get('coin', '').upper() in ('USDC', 'USDH'):
-                            account_value += float(b.get('total', 0))
-                    logger.info(f"Using unified account balance: ${account_value}")
-                except Exception as e:
-                    logger.error(f"Error getting spot state: {e}")
+                    import requests as req
+                    api_url = self._info.base_url + "/info"
+                    resp = req.post(api_url, json={
+                        "type": "portfolioState",
+                        "user": self._wallet_address
+                    })
+                    portfolio = resp.json()
 
-            total_margin_used = float(margin_summary.get('totalMarginUsed', 0))
-            available_balance = account_value - total_margin_used
+                    # Get USDC from spot balances
+                    spot_total = 0
+                    for b in portfolio.get('spotState', {}).get('balances', []):
+                        if b.get('coin', '').upper() in ('USDC', 'USDH'):
+                            spot_total += float(b.get('total', 0))
+
+                    # Get margin + unrealized PnL from perp positions
+                    perp_value = 0
+                    for pos in portfolio.get('clearinghouseState', {}).get('assetPositions', []):
+                        p = pos.get('position', {})
+                        perp_value += float(p.get('marginUsed', 0))
+                        perp_value += float(p.get('unrealizedPnl', 0))
+
+                    account_value = spot_total + perp_value
+                    total_margin_used = perp_value
+                    logger.info(f"Unified portfolio: spot=${spot_total:.2f}, perps=${perp_value:.2f}, total=${account_value:.2f}")
+                except Exception as e:
+                    logger.error(f"Error getting portfolio state: {e}")
 
             return {
                 'retCode': 0,
