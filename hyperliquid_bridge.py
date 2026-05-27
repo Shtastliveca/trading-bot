@@ -232,7 +232,7 @@ class HyperliquidBridge:
             return {'retCode': -1, 'retMsg': str(e), 'result': {}}
     
     # ========== Wallet Balance Methods ==========
-    
+
     def get_wallet_balance(self, **kwargs) -> Dict:
         """Get wallet balance in Bybit response format."""
         try:
@@ -240,27 +240,21 @@ class HyperliquidBridge:
             user_state = self._info.user_state(self._wallet_address)
             margin_summary = user_state.get('marginSummary', {})
             account_value = float(margin_summary.get('accountValue', 0))
+            total_margin_used = float(margin_summary.get('totalMarginUsed', 0))
 
-            # If zero, use portfolioState (unified/portfolio margin account)
+            # If zero, combine spot + perp data (unified account mode)
             if account_value == 0:
                 try:
-                    import requests as req
-                    api_url = self._info.base_url + "/info"
-                    resp = req.post(api_url, json={
-                        "type": "portfolioState",
-                        "user": self._wallet_address
-                    })
-                    portfolio = resp.json()
-
-                    # Get USDC from spot balances
+                    spot_state = self._info.spot_user_state(self._wallet_address)
+                    balances = spot_state.get('balances', [])
                     spot_total = 0
-                    for b in portfolio.get('spotState', {}).get('balances', []):
+                    for b in balances:
                         if b.get('coin', '').upper() in ('USDC', 'USDH'):
                             spot_total += float(b.get('total', 0))
 
                     # Get margin + unrealized PnL from perp positions
                     perp_value = 0
-                    for pos in portfolio.get('clearinghouseState', {}).get('assetPositions', []):
+                    for pos in user_state.get('assetPositions', []):
                         p = pos.get('position', {})
                         perp_value += float(p.get('marginUsed', 0))
                         perp_value += float(p.get('unrealizedPnl', 0))
@@ -269,7 +263,9 @@ class HyperliquidBridge:
                     total_margin_used = perp_value
                     logger.info(f"Unified portfolio: spot=${spot_total:.2f}, perps=${perp_value:.2f}, total=${account_value:.2f}")
                 except Exception as e:
-                    logger.error(f"Error getting portfolio state: {e}")
+                    logger.error(f"Error getting unified balance: {e}")
+
+            available_balance = account_value - total_margin_used
 
             return {
                 'retCode': 0,
@@ -291,8 +287,8 @@ class HyperliquidBridge:
             }
         except Exception as e:
             logger.error(f"Error getting wallet balance: {e}")
-            return {'retCode': -1, 'retMsg': str(e), 'result': {}}
-    
+            return {'retCode': -1, 'retMsg': str(e), 'result': {}}    
+
     def get_balance(self) -> float:
         """Get account balance as a simple float"""
         try:
